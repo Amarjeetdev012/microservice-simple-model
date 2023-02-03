@@ -3,7 +3,3 @@ orders/node_modules
 customers/node_modules
 books/node_modules
 
-user/.env
-orders/.env
-customers/.env
-books/.env
