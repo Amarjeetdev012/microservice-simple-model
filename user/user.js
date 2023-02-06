@@ -2,11 +2,13 @@ import express from 'express';
 import User from './user.model.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import logger from 'morgan'
 import { connectDatabase } from './database/mongoose.database.js';
 // import bcrypt from 'bcrypt';
 dotenv.config({ path: 'config/.env' });
 
 const app = express();
+app.use(logger('dev'));
 app.use(express.json());
 connectDatabase(process.env.MONGO_USER);
 
