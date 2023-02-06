@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { connectDatabase } from './database/mongoose.database.js';
 // import bcrypt from 'bcrypt';
-dotenv.config();
+dotenv.config({ path: 'config/.env' });
 
 const app = express();
 app.use(express.json());
