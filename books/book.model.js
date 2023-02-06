@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { mongo } from 'mongoose';
 const bookSchema = mongoose.Schema(
   {
     title: {
@@ -8,6 +8,9 @@ const bookSchema = mongoose.Schema(
     author: {
       type: String,
       required: true,
+    },
+    userId: {
+      type: mongoose.Types.ObjectId,
     },
     numberPages: {
       type: Number,

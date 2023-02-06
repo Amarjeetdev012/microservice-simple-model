@@ -37,7 +37,6 @@ app.post('/register', async (req, res) => {
     sendData.password = password;
     await User.create(sendData);
     delete sendData.password;
-    console.log('result', sendData);
     res.status(201).send({
       status: true,
       message: 'user created succesfully',
@@ -71,6 +70,20 @@ app.post('/login', async (req, res) => {
     return res
       .status(200)
       .send({ status: true, message: 'login succesfully', data: sendData });
+  } catch (error) {
+    return res.status(500).send({ status: false, msg: error.message });
+  }
+});
+
+app.get('/:userid', async (req, res) => {
+  try {
+    const id = req.params.userid
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).send({ status: false, message: 'user not found' });
+    } else {
+      res.status(200).send({ status: true, message: 'user found', data: user });
+    }
   } catch (error) {
     return res.status(500).send({ status: false, msg: error.message });
   }

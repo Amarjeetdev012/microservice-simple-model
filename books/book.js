@@ -5,6 +5,7 @@ import Book from './book.model.js';
 import { connectDatabase } from './database/mongoose.databse.js';
 import logger from 'morgan';
 import mongoose from 'mongoose';
+import { authenticate, authorize } from './auth.js';
 
 // Connect database
 connectDatabase(process.env.MONGO_BOOK);
@@ -23,11 +24,11 @@ function isValidObjectId(id) {
   return false;
 }
 // create a book
-app.post('/book', async (req, res) => {
+app.post('/book', authenticate, async (req, res) => {
   try {
     const data = req.body;
-    let token = req.cookies;
-    const { title, author } = data;
+    const userId = req.userId;
+    const { title, author, numberPages, publisher } = data;
     if (!title) {
       return res
         .status(400)
@@ -38,7 +39,13 @@ app.post('/book', async (req, res) => {
         .status(400)
         .send({ status: false, message: 'author is required' });
     }
-    const result = await Book.create(data);
+    const bookData = {};
+    bookData.title = title;
+    bookData.author = author;
+    bookData.userId = userId;
+    bookData.numberPages = numberPages;
+    bookData.publisher = publisher;
+    const result = await Book.create(bookData);
     res.status(201).send({
       status: true,
       message: 'New Book added successfully!',
@@ -50,7 +57,7 @@ app.post('/book', async (req, res) => {
 });
 
 // get books
-app.get('/books', async (req, res) => {
+app.get('/books', authenticate, async (req, res) => {
   try {
     const cookie = req.rawHeaders[15];
     const token = cookie.split('=').splice(1, 2).toString();
@@ -79,6 +86,7 @@ app.get('/book/:id', async (req, res) => {
         .send({ status: false, message: 'please provide a valid object id' });
     }
     const data = await Book.findById(id);
+    console.log('data==========', id);
     if (data) {
       res
         .status(200)
@@ -92,7 +100,7 @@ app.get('/book/:id', async (req, res) => {
 });
 
 // delete book by id
-app.delete('/book/:id', async (req, res) => {
+app.delete('/book/:id', authorize, async (req, res) => {
   try {
     const data = await Book.findByIdAndDelete(req.params.id);
     if (data) {

@@ -9,6 +9,9 @@ const CustomerSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
+    userId:{
+      type:mongoose.Types.ObjectId
+    },
     address: {
       type: String,
       required: true,

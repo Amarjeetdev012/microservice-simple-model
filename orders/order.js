@@ -9,6 +9,7 @@ import { connectDatabase } from './database/mongoose.model.js';
 connectDatabase(process.env.MONGO_ORDER);
 
 import logger from 'morgan';
+import { authenticate, authorize } from './auth.js';
 
 const app = express();
 const port = 6000;
@@ -26,7 +27,7 @@ function isValidObjectId(id) {
 }
 
 // create order
-app.post('/order', async (req, res) => {
+app.post('/order', authorize, async (req, res) => {
   try {
     const data = req.body;
     const { customerID, bookID, initialDate } = data;
@@ -60,7 +61,7 @@ app.post('/order', async (req, res) => {
 });
 
 // get orders
-app.get('/orders', async (req, res) => {
+app.get('/orders', authenticate, async (req, res) => {
   try {
     const data = await Order.find();
     if (data) {
@@ -78,7 +79,7 @@ app.get('/orders', async (req, res) => {
 });
 
 // get order by id
-app.get('/order/:id', async (req, res) => {
+app.get('/order/:id', authenticate, async (req, res) => {
   try {
     const id = req.params.id;
     if (!isValidObjectId(id)) {
@@ -88,27 +89,23 @@ app.get('/order/:id', async (req, res) => {
     }
     const findOrder = await Order.findById(id);
     const customerId = findOrder.customerID.toString();
-    if (findOrder) {
-      axios
-        .get(`http://localhost:5000/customer/${customerId}`)
-        .then((response) => {
-          let orderObject = {
-            CustomerName: response.data.data.name,
-            BookTitle: '',
-          };
-          const bookID = findOrder.bookID.toString();
-          axios.get(`http://localhost:4000/book/${bookID}`).then((response) => {
-            orderObject.BookTitle = response.data.data.title;
-            res.status(200).send({
-              status: true,
-              message: 'order details get sucesfully by id',
-              data: orderObject,
-            });
-          });
-        });
-    } else {
-      res.status(404).send({ status: false, message: 'Orders not found' });
-    }
+    const bookId = findOrder.bookID.toString();
+    const customerResponse = await axios.get(
+      `http://localhost:5000/customer/${customerId}`
+    );
+    let orderObject = {
+      CustomerName: customerResponse.data.data.name,
+      BookTitle: '',
+    };
+    const bookResponse = await axios.get(
+      `http://localhost:4000/book/${bookId}`
+    );
+    orderObject.BookTitle = bookResponse.data.data.title;
+    res.status(200).send({
+      status: true,
+      message: 'order get successfully',
+      data: orderObject,
+    });
   } catch (error) {
     return res.status(500).send({ status: false, msg: error.message });
   }

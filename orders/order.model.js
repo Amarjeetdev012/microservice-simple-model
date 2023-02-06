@@ -10,6 +10,9 @@ const orderSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       required: true,
     },
+    userId: {
+      type: mongoose.SchemaTypes.ObjectId,
+    },
     initialDate: {
       type: Date,
       required: true,

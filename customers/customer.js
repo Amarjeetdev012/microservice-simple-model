@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: 'config/.env' });
 import express from 'express';
 import mongoose from 'mongoose';
 import Customer from './customer.model.js';
 import { connectDatabase } from './database/mongoose.database.js';
 import logger from 'morgan';
+import { authenticate, authorize } from './auth.js';
 
 // Connect
 connectDatabase(process.env.MONGO_CUSTOMER);
@@ -26,17 +27,23 @@ function isValidObjectId(id) {
 }
 
 // create customer
-app.post('/customer', async (req, res) => {
+app.post('/customer', authenticate, async (req, res) => {
   try {
     const data = req.body;
     const { name, age, address } = data;
-    if (!name || !age || !address) {
+    const userId = req.userId;
+    if (!name || !age || !address || !userId) {
       return res.status(400).send({
         status: false,
         message: 'please provide required fields name age address',
       });
     }
-    const result = await Customer.create(data);
+    const createData = {};
+    createData.name = name;
+    createData.age = age;
+    createData.userId = userId;
+    createData.address = address;
+    const result = await Customer.create(createData);
     res.status(201).send({
       status: true,
       message: 'New Customer created successfully!',
@@ -48,8 +55,9 @@ app.post('/customer', async (req, res) => {
 });
 
 // get customers
-app.get('/customers', async (req, res) => {
+app.get('/customers', authenticate, async (req, res) => {
   try {
+    console.log('=======............>>>>>>>>>>>');
     const data = await Customer.find();
     if (data) {
       res.status(200).send({
@@ -90,7 +98,7 @@ app.get('/customer/:id', async (req, res) => {
 });
 
 // delete by id
-app.delete('/customer/:id', async (req, res) => {
+app.delete('/customer/:id', authorize, async (req, res) => {
   try {
     const id = req.params.id;
     if (!isValidObjectId(id)) {
