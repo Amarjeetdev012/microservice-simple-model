@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: 'config/.env' });
 import express from 'express';
 import Book from './book.model.js';
 import { connectDatabase } from './database/mongoose.databse.js';
