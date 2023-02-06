@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import axios from 'axios';
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({ path: 'config/.env' });
 import express from 'express';
 import Order from './order.model.js';
 import { connectDatabase } from './database/mongoose.model.js';
