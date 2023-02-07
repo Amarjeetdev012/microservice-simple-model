@@ -2,7 +2,7 @@ import express from 'express';
 import User from './user.model.js';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import logger from 'morgan'
+import logger from 'morgan';
 import { connectDatabase } from './database/mongoose.database.js';
 // import bcrypt from 'bcrypt';
 dotenv.config({ path: 'config/.env' });
@@ -32,11 +32,11 @@ app.post('/register', async (req, res) => {
         message: 'this email is already used try new emailid',
       });
     }
-    // const hashPassword = await bcrypt.hash(password, 10);
+    const hashPassword = await bcrypt.hash(password, 10);
     const sendData = {};
     sendData.name = name;
     sendData.email = email;
-    sendData.password = password;
+    sendData.password = hashPassword;
     await User.create(sendData);
     delete sendData.password;
     res.status(201).send({
@@ -79,7 +79,7 @@ app.post('/login', async (req, res) => {
 
 app.get('/:userid', async (req, res) => {
   try {
-    const id = req.params.userid
+    const id = req.params.userid;
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).send({ status: false, message: 'user not found' });
